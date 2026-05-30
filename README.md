@@ -55,7 +55,3 @@ npm run dev
 | `npm run preview` | 预览生产构建 |
 | `npm run lint` | 代码检查（oxlint + eslint） |
 | `npm run format` | 代码格式化（prettier） |
-
-## 许可证
-
-MIT
