@@ -6,7 +6,7 @@
 
 - **Vue 3** — Composition API + `<script setup>`
 - **Vite** — 构建工具
-- **CSS3** — 渐变背景、动画效果
+- **CSS3** — 渐变背景、毛玻璃效果、动画
 - **localStorage** — 数据持久化
 
 ## 功能
@@ -21,15 +21,15 @@
 
 ```
 Todo/
-├── Frontend/
-│   ├── src/
-│   │   ├── App.vue          # 主应用组件（全部逻辑 + 样式）
-│   │   └── main.js          # Vue 入口
-│   ├── index.html
-│   ├── vite.config.js
-│   ├── eslint.config.js
-│   └── package.json
-├── package.json              # 根级命令代理
+├── src/
+│   ├── App.vue          # 主应用组件（全部逻辑 + 样式）
+│   └── main.js          # Vue 入口
+├── public/
+│   └── favicon.ico
+├── index.html
+├── vite.config.js
+├── eslint.config.js
+├── package.json
 ├── CLAUDE.md
 └── README.md
 ```
@@ -38,13 +38,13 @@ Todo/
 
 ```bash
 # 安装依赖
-npm run install:all
+npm install
 
 # 启动开发服务器
 npm run dev
 ```
 
-前端将在 http://localhost:5173 启动。
+访问 http://localhost:5173
 
 ## 可用命令
 
@@ -55,3 +55,4 @@ npm run dev
 | `npm run preview` | 预览生产构建 |
 | `npm run lint` | 代码检查（oxlint + eslint） |
 | `npm run format` | 代码格式化（prettier） |
+
