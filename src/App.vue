@@ -10,6 +10,55 @@ const editingTodo = reactive({
   isEditing: false
 });
 
+// 拖拽状态
+const dragState = reactive({
+  draggingId: null,   // 正在拖拽的 item id
+  overId: null         // 拖拽悬停的目标 id
+});
+
+function onDragStart(e, item) {
+  dragState.draggingId = item.id;
+  e.dataTransfer.effectAllowed = 'move';
+  // Firefox 需要设置 dataTransfer 数据
+  e.dataTransfer.setData('text/plain', String(item.id));
+}
+
+function onDragOver(e, item) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  // 只在目标变化时更新，避免不必要的渲染
+  if (dragState.overId !== item.id && dragState.draggingId !== item.id) {
+    dragState.overId = item.id;
+  }
+}
+
+function onDragLeave(item) {
+  if (dragState.overId === item.id) {
+    dragState.overId = null;
+  }
+}
+
+function onDrop(e, targetItem) {
+  e.preventDefault();
+  const fromId = dragState.draggingId;
+  const toId = targetItem.id;
+  if (fromId === toId || !fromId) return;
+
+  const fromIdx = list.value.findIndex(t => t.id === fromId);
+  const toIdx = list.value.findIndex(t => t.id === toId);
+  if (fromIdx === -1 || toIdx === -1) return;
+
+  // 从原位置移除，插入到目标位置
+  const [moved] = list.value.splice(fromIdx, 1);
+  list.value.splice(toIdx, 0, moved);
+  saveList();
+}
+
+function onDragEnd() {
+  dragState.draggingId = null;
+  dragState.overId = null;
+}
+
 // localStorage 读写工具
 function loadList() {
   try {
@@ -139,8 +188,30 @@ onMounted(() => loadList());
           v-for="item in list"
           :key="item.id"
           class="todo-item"
-          :class="{ done: item.isCompleted }"
+          :class="{
+            done: item.isCompleted,
+            dragging: dragState.draggingId === item.id,
+            'drag-over': dragState.overId === item.id && dragState.draggingId !== item.id
+          }"
+          draggable="true"
+          @dragstart="onDragStart($event, item)"
+          @dragover="onDragOver($event, item)"
+          @dragleave="onDragLeave(item)"
+          @drop="onDrop($event, item)"
+          @dragend="onDragEnd"
         >
+          <!-- 拖拽手柄 -->
+          <span class="drag-handle" title="Drag to reorder">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="9" cy="6" r="1.5" />
+              <circle cx="15" cy="6" r="1.5" />
+              <circle cx="9" cy="12" r="1.5" />
+              <circle cx="15" cy="12" r="1.5" />
+              <circle cx="9" cy="18" r="1.5" />
+              <circle cx="15" cy="18" r="1.5" />
+            </svg>
+          </span>
+
           <label class="check-label">
             <input
               type="checkbox"
@@ -410,6 +481,44 @@ onMounted(() => loadList());
 .todo-item.done {
   background: #f7fafc;
   border-color: #edf2f7;
+}
+
+/* ── 拖拽 ── */
+.drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  cursor: grab;
+  color: #cbd5e0;
+  flex-shrink: 0;
+  transition: color 0.2s;
+  touch-action: none;
+}
+
+.drag-handle:hover {
+  color: #a0aec0;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-handle svg {
+  width: 16px;
+  height: 16px;
+}
+
+.todo-item.dragging {
+  opacity: 0.4;
+  transform: scale(0.98);
+}
+
+.todo-item.drag-over {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.15);
+  transform: translateY(-2px);
 }
 
 /* ── 自定义 checkbox ── */
