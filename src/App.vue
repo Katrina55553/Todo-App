@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 
 const STORAGE_KEY = 'todo-list';
 const value = ref('');
@@ -25,8 +25,13 @@ function onDragStart(e, item) {
 
 function onDragOver(e, item) {
   e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  // 只在目标变化时更新，避免不必要的渲染
+  const draggingItem = list.value.find(t => t.id === dragState.draggingId);
+  // 跨区域时显示禁止图标
+  if (draggingItem && draggingItem.isPinned !== item.isPinned) {
+    e.dataTransfer.dropEffect = 'none';
+  } else {
+    e.dataTransfer.dropEffect = 'move';
+  }
   if (dragState.overId !== item.id && dragState.draggingId !== item.id) {
     dragState.overId = item.id;
   }
@@ -44,11 +49,15 @@ function onDrop(e, targetItem) {
   const toId = targetItem.id;
   if (fromId === toId || !fromId) return;
 
+  const fromItem = list.value.find(t => t.id === fromId);
+  if (!fromItem) return;
+  // 置顶项只能和置顶项互换，反之亦然
+  if (fromItem.isPinned !== targetItem.isPinned) return;
+
   const fromIdx = list.value.findIndex(t => t.id === fromId);
   const toIdx = list.value.findIndex(t => t.id === toId);
   if (fromIdx === -1 || toIdx === -1) return;
 
-  // 从原位置移除，插入到目标位置
   const [moved] = list.value.splice(fromIdx, 1);
   list.value.splice(toIdx, 0, moved);
   saveList();
@@ -73,6 +82,13 @@ function saveList() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list.value));
 }
 
+// 置顶项排在前面，各组内保持原序
+const sortedList = computed(() => {
+  const pinned = list.value.filter(t => t.isPinned);
+  const unpinned = list.value.filter(t => !t.isPinned);
+  return [...pinned, ...unpinned];
+});
+
 function add() {
   const trimmed = value.value.trim();
   if (!trimmed) return;
@@ -80,10 +96,16 @@ function add() {
   list.value.push({
     id: Date.now(),
     value: trimmed,
-    isCompleted: false
+    isCompleted: false,
+    isPinned: false
   });
   saveList();
   value.value = '';
+}
+
+function togglePin(item) {
+  item.isPinned = !item.isPinned;
+  saveList();
 }
 
 function update(item) {
@@ -185,11 +207,12 @@ onMounted(() => loadList());
       <!-- 列表 -->
       <TransitionGroup name="list" tag="ul" class="todo-list">
         <li
-          v-for="item in list"
+          v-for="item in sortedList"
           :key="item.id"
           class="todo-item"
           :class="{
             done: item.isCompleted,
+            pinned: item.isPinned,
             dragging: dragState.draggingId === item.id,
             'drag-over': dragState.overId === item.id && dragState.draggingId !== item.id
           }"
@@ -212,6 +235,13 @@ onMounted(() => loadList());
             </svg>
           </span>
 
+          <!-- 置顶指示器 -->
+          <span v-if="item.isPinned" class="pin-indicator" title="Pinned">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+            </svg>
+          </span>
+
           <label class="check-label">
             <input
               type="checkbox"
@@ -229,6 +259,16 @@ onMounted(() => loadList());
           <span class="todo-text">{{ item.value }}</span>
 
           <div class="actions">
+            <button
+              class="btn-icon btn-pin"
+              :class="{ active: item.isPinned }"
+              @click="togglePin(item)"
+              :title="item.isPinned ? 'Unpin' : 'Pin to top'"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
+              </svg>
+            </button>
             <button class="btn-icon btn-edit" @click="startEdit(item)" title="Edit">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
@@ -483,6 +523,27 @@ onMounted(() => loadList());
   border-color: #edf2f7;
 }
 
+.todo-item.pinned {
+  border-left: 3px solid #7c3aed;
+  background: #faf5ff;
+}
+
+.todo-item.pinned:hover {
+  border-color: #7c3aed;
+}
+
+.pin-indicator {
+  display: flex;
+  align-items: center;
+  color: #7c3aed;
+  flex-shrink: 0;
+}
+
+.pin-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* ── 拖拽 ── */
 .drag-handle {
   display: flex;
@@ -636,6 +697,19 @@ onMounted(() => loadList());
 .btn-del:hover {
   background: #fff5f5;
   color: #c53030;
+}
+
+.btn-pin {
+  color: #a0aec0;
+}
+
+.btn-pin:hover {
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.btn-pin.active {
+  color: #7c3aed;
 }
 
 /* ── 空状态 ── */
