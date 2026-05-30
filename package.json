@@ -1,0 +1,20 @@
+{
+  "name": "todo-app",
+  "version": "1.0.0",
+  "description": "Todo App - Vue 3 前端应用（纯前端，localStorage 存储）",
+  "scripts": {
+    "dev": "cd Frontend && npm run dev",
+    "build": "cd Frontend && npm run build",
+    "preview": "cd Frontend && npm run preview",
+    "lint": "cd Frontend && npm run lint",
+    "format": "cd Frontend && npm run format",
+    "install:all": "npm install && cd Frontend && npm install"
+  },
+  "keywords": [
+    "vue",
+    "todo",
+    "frontend"
+  ],
+  "author": "你的名字",
+  "license": "MIT"
+}
