@@ -56,3 +56,15 @@ npm run dev
 | `npm run lint` | 代码检查（oxlint + eslint） |
 | `npm run format` | 代码格式化（prettier） |
 
+## Docker 部署
+
+```bash
+# 构建镜像
+docker build -t todo-app .
+
+# 运行容器
+docker run -d -p 8080:80 --name todo todo-app
+```
+
+访问 http://localhost:8080
+
