@@ -5,3 +5,5 @@ dist
 *.md
 .vscode
 .idea
+Dockerfile
+nginx.conf

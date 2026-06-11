@@ -141,7 +141,7 @@ function saveEdit() {
   cancelEdit();
 }
 
-const completedCount = () => list.value.filter(t => t.isCompleted).length;
+const completedCount = computed(() => list.value.filter(t => t.isCompleted).length);
 
 onMounted(() => loadList());
 </script>
@@ -159,7 +159,7 @@ onMounted(() => loadList());
           Todo
         </h1>
         <span class="counter" v-if="list.length">
-          {{ completedCount() }} / {{ list.length }} done
+          {{ completedCount }} / {{ list.length }} done
         </span>
       </header>
 
