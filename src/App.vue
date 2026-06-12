@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive, computed, nextTick, useTemplateRef } from 'vue';
 
 const STORAGE_KEY = 'todo-list';
 const value = ref('');
@@ -9,6 +9,8 @@ const editingTodo = reactive({
   value: '',
   isEditing: false
 });
+
+const editInputRef = useTemplateRef('editInput');
 
 // 拖拽状态
 const dragState = reactive({
@@ -72,7 +74,9 @@ function onDragEnd() {
 function loadList() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    list.value = raw ? JSON.parse(raw) : [];
+    list.value = raw
+      ? JSON.parse(raw).map(t => ({ isPinned: false, ...t }))
+      : [];
   } catch {
     list.value = [];
   }
@@ -94,7 +98,7 @@ function add() {
   if (!trimmed) return;
 
   list.value.push({
-    id: Date.now(),
+    id: crypto.randomUUID(),
     value: trimmed,
     isCompleted: false,
     isPinned: false
@@ -122,6 +126,7 @@ function startEdit(item) {
   editingTodo.id = item.id;
   editingTodo.value = item.value;
   editingTodo.isEditing = true;
+  nextTick(() => editInputRef.value?.focus());
 }
 
 function cancelEdit() {
@@ -143,7 +148,7 @@ function saveEdit() {
 
 const completedCount = computed(() => list.value.filter(t => t.isCompleted).length);
 
-onMounted(() => loadList());
+onMounted(loadList);
 </script>
 
 <template>
@@ -224,7 +229,7 @@ onMounted(() => loadList());
           @dragend="onDragEnd"
         >
           <!-- 拖拽手柄 -->
-          <span class="drag-handle" title="Drag to reorder">
+          <span class="drag-handle" title="Drag to reorder" role="button" aria-label="Drag to reorder">
             <svg viewBox="0 0 24 24" fill="currentColor">
               <circle cx="9" cy="6" r="1.5" />
               <circle cx="15" cy="6" r="1.5" />
@@ -757,20 +762,3 @@ onMounted(() => loadList());
 }
 </style>
 
-<style>
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-</style>

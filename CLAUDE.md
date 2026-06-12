@@ -38,10 +38,10 @@ npm run format     # prettier --write src/
 使用浏览器 **localStorage**，key 为 `todo-list`，值为 JSON 数组。每个 todo 对象结构：
 
 ```js
-{ id: number, value: string, isCompleted: boolean }
+{ id: string, value: string, isCompleted: boolean, isPinned: boolean }
 ```
 
-`id` 使用 `Date.now()` 生成，足以满足纯前端场景。
+`id` 使用 `crypto.randomUUID()` 生成。旧数据在加载时自动补全 `isPinned: false`。
 
 ## 代码风格
 

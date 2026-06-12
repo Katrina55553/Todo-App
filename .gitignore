@@ -19,6 +19,9 @@ npm-debug.log*
 coverage/
 .nyc_output/
 
+# Cache
+.eslintcache
+
 # Vite
 .vite/
 
