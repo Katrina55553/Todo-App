@@ -23,6 +23,8 @@
 
 ```
 Todo/
+├── .github/workflows/
+│   └── deploy.yml       # GitHub Pages 自动部署
 ├── src/
 │   ├── App.vue          # 主应用组件（全部逻辑 + 样式）
 │   └── main.js          # Vue 入口
@@ -58,15 +60,8 @@ npm run dev
 | `npm run lint` | 代码检查（oxlint + eslint） |
 | `npm run format` | 代码格式化（prettier） |
 
-## Docker 部署
+## 部署
 
-```bash
-# 构建镜像
-docker build -t todo-app .
+项目通过 GitHub Actions 自动部署到 GitHub Pages。push 到 `main` 分支后自动构建并发布。
 
-# 运行容器
-docker run -d -p 8080:80 --name todo todo-app
-```
-
-访问 http://localhost:8080
-
+在线访问：https://katrina55553.github.io/Todo-App/
