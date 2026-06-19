@@ -1,8 +1,8 @@
 <script setup>
 import { ref, onMounted, reactive, computed, nextTick, useTemplateRef } from 'vue';
-import { createLocalStorageAdapter } from './storage/index.js';
+import { createStorageAdapterForApp } from './storage/index.js';
 
-const storage = createLocalStorageAdapter();
+const storage = createStorageAdapterForApp();
 const value = ref('');
 const list = ref([]);
 const editingTodo = reactive({
