@@ -83,8 +83,9 @@ Todo/
 ├── .github/workflows/
 │   └── deploy.yml                  # GitHub Pages 自动部署
 ├── src/
-│   ├── App.vue                     # Web 主组件（逻辑 + 样式）
-│   ├── main.js                     # Vue 入口
+│   ├── web/                        # Web 端
+│   │   ├── App.vue                 # 主组件（逻辑 + 样式）
+│   │   └── main.js                 # Vue 入口
 │   └── storage/                    # 可插拔存储层
 │       ├── storage.js              # Storage 接口
 │       ├── localStorageAdapter.js  # 浏览器 localStorage 实现

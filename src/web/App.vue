@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive, computed, nextTick, useTemplateRef } from 'vue';
-import { createStorageAdapterForApp } from './storage/index.js';
+import { createStorageAdapterForApp } from '../storage/index.js';
 
 const storage = createStorageAdapterForApp();
 const value = ref('');
