@@ -62,7 +62,9 @@ async function onDrop(e, targetItem) {
   if (fromIdx === -1 || toIdx === -1) return;
 
   const [moved] = list.value.splice(fromIdx, 1);
-  list.value.splice(toIdx, 0, moved);
+  // 从上往下拖时，移除后目标索引前移一位，需要补偿
+  const adjustedToIdx = fromIdx < toIdx ? toIdx - 1 : toIdx;
+  list.value.splice(adjustedToIdx, 0, moved);
   await saveList();
 }
 
