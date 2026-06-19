@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted, reactive, computed, nextTick, useTemplateRef } from 'vue';
+import { createLocalStorageAdapter } from './storage/index.js';
 
-const STORAGE_KEY = 'todo-list';
+const storage = createLocalStorageAdapter();
 const value = ref('');
 const list = ref([]);
 const editingTodo = reactive({
@@ -45,7 +46,7 @@ function onDragLeave(item) {
   }
 }
 
-function onDrop(e, targetItem) {
+async function onDrop(e, targetItem) {
   e.preventDefault();
   const fromId = dragState.draggingId;
   const toId = targetItem.id;
@@ -62,7 +63,7 @@ function onDrop(e, targetItem) {
 
   const [moved] = list.value.splice(fromIdx, 1);
   list.value.splice(toIdx, 0, moved);
-  saveList();
+  await saveList();
 }
 
 function onDragEnd() {
@@ -70,20 +71,13 @@ function onDragEnd() {
   dragState.overId = null;
 }
 
-// localStorage 读写工具
-function loadList() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    list.value = raw
-      ? JSON.parse(raw).map(t => ({ isPinned: false, ...t }))
-      : [];
-  } catch {
-    list.value = [];
-  }
+// storage 读写工具
+async function loadList() {
+  list.value = await storage.load();
 }
 
-function saveList() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list.value));
+async function saveList() {
+  await storage.save(list.value);
 }
 
 // 置顶项排在前面，各组内保持原序
@@ -93,7 +87,7 @@ const sortedList = computed(() => {
   return [...pinned, ...unpinned];
 });
 
-function add() {
+async function add() {
   const trimmed = value.value.trim();
   if (!trimmed) return;
 
@@ -103,23 +97,23 @@ function add() {
     isCompleted: false,
     isPinned: false
   });
-  saveList();
+  await saveList();
   value.value = '';
 }
 
-function togglePin(item) {
+async function togglePin(item) {
   item.isPinned = !item.isPinned;
-  saveList();
+  await saveList();
 }
 
-function update(item) {
+async function update(item) {
   item.isCompleted = !item.isCompleted;
-  saveList();
+  await saveList();
 }
 
-function del(item) {
+async function del(item) {
   list.value = list.value.filter(t => t.id !== item.id);
-  saveList();
+  await saveList();
 }
 
 function startEdit(item) {
@@ -135,13 +129,13 @@ function cancelEdit() {
   editingTodo.isEditing = false;
 }
 
-function saveEdit() {
+async function saveEdit() {
   if (!editingTodo.value.trim()) return;
 
   const target = list.value.find(t => t.id === editingTodo.id);
   if (target) {
     target.value = editingTodo.value.trim();
-    saveList();
+    await saveList();
   }
   cancelEdit();
 }

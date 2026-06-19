@@ -38,3 +38,6 @@ Thumbs.db
 # Package
 *.tgz
 *.local
+
+# TUI data
+todos.json
